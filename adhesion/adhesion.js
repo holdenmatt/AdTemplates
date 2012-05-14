@@ -34,7 +34,7 @@
             return ua.match(/[5-9]_[0-9]/) || false;
         }
         if (ua.match(/(Android)/)) {
-            return ua.match(/[3-9]\.[0-9]\.[0-9]/) || false;
+            return ua.match(/[3-9]\.[0-9]\.[0-9]/) || ua.match(/2\.[2-3]\.[0-9]/) || false;
         }
         return true; // Assume fixed positioning works
     }
