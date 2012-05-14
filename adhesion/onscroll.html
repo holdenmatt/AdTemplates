@@ -1,0 +1,95 @@
+<!--
+
+THIS IS AN EXAMPLE OF THE JAVASCRIPT-ONLY SOLUTION. PLEASE USE adhesion.js
+TO PROPERLY IMPLEMENT ADHESION BANNERS.
+
+This implemenation works on all the majority of mobile browsers by using the
+scroll event to reposition the headers. It also uses CSS animations where
+available to smooth out the transitions. Sadly, the animation only triggers
+after scrolling stops so the result is jarring for users.
+
+-->
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
+        <style>
+            .adHeader, .adFooter {
+                position: fixed;
+                width: 100%;
+                height: 50px;
+            }
+        </style>
+
+        <script type="text/javascript" charset="utf-8">
+            (function () {
+
+                // Modify to match the class name of your header/footer div
+                var config = {
+                    'headerClass': 'adHeader',
+                    'footerClass': 'adFooter'
+                }
+
+                // Apply a style object to a DOM element
+                function setStyles(element, styles) {
+                    for (var key in styles) {
+                        element.style[key] = styles[key];
+                    }
+                }
+
+                // Determine if an element has a class
+                function hasClass(element, cls) {
+                    var r = new RegExp('\\b' + cls + '\\b');
+                    return r.test(element.className);
+                }
+
+                function reposition(element) {
+                    var pos = window.pageYOffset;
+
+                    if (hasClass(element, config.footerClass)) {
+                        pos += window.innerHeight - element.clientHeight;
+                    }
+
+                    setStyles(element, {
+                        'position': 'absolute',
+                        'top': 0,
+                        'webkitTransform':
+                            'translateY(' + pos + 'px)'
+                    });
+                }
+
+                function applyScrollEvent(element) {
+                    reposition(element);
+
+                    setTimeout(function () {
+                        setStyles(element, {
+                            '-webkit-transition':
+                                '-webkit-transform 150ms ease-out'
+                        });
+                    }, 0);
+
+                    window.addEventListener('scroll', function () {
+                        reposition(element);
+                    }, false);
+                }
+
+                function initialize() {
+                    var d = window.document,
+                        headers = d.getElementsByClassName(config.headerClass),
+                        footers = d.getElementsByClassName(config.footerClass),
+                        header = headers.length > 0 ? headers[0] : null,
+                        footer = footers.length > 0 ? footers[0] : null;
+
+                    if (header) { applyScrollEvent(header); }
+                    if (footer) { applyScrollEvent(footer); }
+                }
+
+                window.addEventListener('load', initialize, false);
+            })();
+        </script>
+    </head>
+    <body>
+        <div class="adHeader">Fixed Header</div>
+        ...
+        <div class="adFooter">Fixed Footer</div>
+    </body>
+</html>

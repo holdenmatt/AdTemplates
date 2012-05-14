@@ -1,0 +1,35 @@
+<!--
+    adhesion.html
+    This snippet shows the basic HTML structure required to use adhesion.js.
+
+    1. Include adhesion.js script file or copy the javascript inline
+    2. Create a div for your banner. You're not required to have both header/footer
+       banners on your page but the div should be an immediate child of the body tag
+       so other styling doesn't affect positioning. Note: If you change the class
+       name to something other than 'adHeader'/'adFooter', make sure to make the
+       corresponding change to the configured values in adhesion.js
+    3. Set the width and height of adHeader/adFooter to match the size of the
+       banner you plan to show.
+    4. (Recommended) Include the meta viewport tag. This is typically already
+       present on most mobile optimized websites which is where mobile banners are
+       best suited. If you include this viewport tag, you can use the 'width: 100%'
+       css styling on your banners and have them properly handle both device
+       orientations.
+-->
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
+        <style>
+            .adHeader, .adFooter {
+                width: 100%;
+                height: 50px;
+            }
+        </style>
+        <script src="adhesion.js"></script>
+    </head>
+    <body>
+        <div class="adHeader"><!-- Your Header Banner Ad Tag Goes Here --></div>
+        ...
+        <div class="adFooter"><!-- Your Footer Banner Ad Tag Goes Here --></div>
+    </body>
+</html>
