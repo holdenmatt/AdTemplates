@@ -12,7 +12,9 @@ This package contains the following files:
                           used for device testing.
 - fixed.html - An example of the position:fixed CSS solution supported on newer
                Android and iOS devices. This is purely for illustrative
-               purposes.
+               purposes. If you want to simplify your banner code, this will
+               give you the most coverage for the smallest addition to your
+               site (see fixed.html for device coverage details).
 - onscroll.html - An example of the javascript scroll event solution for support
                   on older iOS devices. This is purely for illustrative
                   purposes.
