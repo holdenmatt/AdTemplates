@@ -1128,14 +1128,41 @@ window.TouchCarousel.util = (function () {
         return el.className.match(re);
     };
     util.addClass = function (el, className) {
-        if (!util.hasClass(el, className)) {
+        if (el && !util.hasClass(el, className)) {
             el.className += ' ' + className;
         }
     };
     util.removeClass = function (el, className) {
-        var re = new RegExp('(\\s|^)' + className + '(\\s|$)');
-        el.className = el.className.replace(re, ' ');
+        if (el) {
+            var re = new RegExp('(\\s|^)' + className + '(\\s|$)');
+            el.className = el.className.replace(re, ' ');
+        }
     };
+
+    util.fadeOut = function (el) {
+        el.style.display = 'none';
+    };
+
+    // Polyfill Function.prototype.bind.
+    // Adapted from:
+    // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Function/bind
+    if (!Function.prototype.bind) {
+        Function.prototype.bind = function (context) {
+            var slice = Array.prototype.slice,
+                args = slice.call(arguments, 1),
+                self = this,
+                noop = function () {},
+                bound = function () {
+                    return self.apply(
+                        this instanceof noop ? this : (context || {}),
+                        args.concat(slice.call(arguments))
+                    );
+                };
+            noop.prototype = this.prototype;
+            bound.prototype = new noop();
+            return bound;
+        };
+    }
 
     return util;
 })();
@@ -1146,6 +1173,17 @@ window.TouchCarousel.util = (function () {
  */
 window.TouchCarousel = window.TouchCarousel || {};
 (function () {
+
+    // Open the carousel's target URL after a tap event on the item with
+    // given index.  Redirect by default, but you can override this if needed.
+    window.TouchCarousel.open = function (url, itemIndex) {
+        window.open(url, '_blank');
+    };
+
+    // Called for every user 'swipe' event.
+    window.TouchCarousel.onSwipe = function () {
+        // Do nothing.  Add in-ad tracking call here if needed.
+    };
 
     var util = window.TouchCarousel.util;
 
@@ -1163,7 +1201,6 @@ window.TouchCarousel = window.TouchCarousel || {};
         snap: true,
         momentum: false,
         hScrollbar: false,
-        vScrollbar: false,
         wheelAction: 'none',
 
         // If the carousel moves more than this amount, we snap to the
@@ -1175,16 +1212,22 @@ window.TouchCarousel = window.TouchCarousel || {};
     // Create a carousel from a wrapper div containing an ul of items.
     function Carousel (wrapper, options) {
 
-        this.wrapper = wrapper;
+        this.el = this.wrapper = wrapper;
         this.options = options;
 
-        var width = parseInt(wrapper.style.width, 10),
-            height = parseInt(wrapper.style.height, 10);
-
-        if (!width || !height) {
+        // width/height must be set on the carousel div.
+        this.width = parseInt(wrapper.style.width, 10);
+        this.height = parseInt(wrapper.style.height, 10);
+        if (!this.width || !this.height) {
             throw new Error('div.Carousel must have a width/height');
         }
 
+        this.href = wrapper.getAttribute('data-href');
+        if (!this.href) {
+            throw new Error('div.Carousel must have a data-href attribute');
+        }
+
+        // The carousel div must contain a ul with li items.
         var ul = wrapper.querySelector('ul');
         if (!ul) {
             throw new Error('div.Carousel must contain an <ul> tag');
@@ -1194,19 +1237,20 @@ window.TouchCarousel = window.TouchCarousel || {};
             throw new Error('div.Carousel > ul must contain <li> items');
         }
 
-        util.addClass(this.wrapper, 'wrapper');
-
-        this.scroller = util.createElement('div', {
-            'class': 'scroller'
-        }, {
-            width: width * items.length + 'px',
+        // iScroll will snap to quadrants by dividing the scroller
+        // size by the wrapper size, so scale the scroller width.
+        this.scroller = util.createElement('div', {}, {
+            width: this.width * items.length + 'px',
             height: '100%'
         });
 
+        util.addClass(this.wrapper, 'wrapper');
+        util.addClass(this.scroller, 'scroller');
+
         for (var i = 0; i < items.length; i++) {
             util.setStyles(items[i], {
-                width: width + 'px',
-                height: height + 'px'
+                width: this.width + 'px',
+                height: this.height + 'px'
             });
         }
 
@@ -1215,7 +1259,11 @@ window.TouchCarousel = window.TouchCarousel || {};
 
         this.wrapper.style.display = 'block';
 
-        options.onScrollEnd = this.onScrollEnd;
+        this.initializeOverlay();
+
+        options.onScrollStart = this.onScrollStart.bind(this);
+        options.onScrollMove = this.onScrollMove.bind(this);
+        options.onTouchEnd = this.onTouchEnd.bind(this);
 
         this.iScroll = new iScroll(this.wrapper, options);
 
@@ -1223,42 +1271,98 @@ window.TouchCarousel = window.TouchCarousel || {};
         this.wrapper.appendChild(this.indicator.el);
     }
 
-    Carousel.prototype.onScrollEnd = function () {
-        document.querySelector('.PageIndicator > li.active').className = '';
-        document.querySelector('.PageIndicator > li:nth-child(' + (this.currPageX + 1) + ')').className = 'active';
+    Carousel.prototype.initializeOverlay = function () {
+        this.overlay = this.el.querySelector('span.Overlay');
+        if (this.overlay) {
+            // Add the overlay to the scroller, so it doesn't block scrolling.
+            var container = util.createElement('div', {
+                'class': 'OverlayContainer'
+            }, {
+                width: this.width + 'px'
+            });
+            this.scroller.appendChild(container);
+            container.appendChild(this.overlay);
+        }
     };
 
+    // Fade out when scrolling starts.
+    Carousel.prototype.onScrollStart = function (e) {
+        if (this.overlay) {
+            util.fadeOut(this.overlay.parentNode);
+        }
+    };
+
+    // Remember if we ever scroll outside the threshold.
+    Carousel.prototype.onScrollMove = function (e) {
+        if (!this.scrolledOut) {
+            var threshold = this.options.snapThreshold,
+                scrolledOutX = this.iScroll.absDistX > threshold,
+                scrolledOutY = this.iScroll.absDistY > threshold;
+            if (scrolledOutX || scrolledOutY) {
+                this.scrolledOut = true;
+            }
+        }
+    };
+
+    // If a scroll moves < snapThreshold, consider it a tap.
+    Carousel.prototype.onTouchEnd = function (e) {
+
+        // If onTouchEnd was triggered by mouseout, ignore tap.
+        if (e.type === 'mouseout') {
+            return;
+        }
+
+        if (this.scrolledOut) {
+            // Prevent clicks if we've already scrolled out.
+            var preventClick = function () {
+                e.stopPropagation();
+                e.target.removeEventListener('click', preventClick, false);
+            };
+            e.target.addEventListener('click', preventClick, false);
+            this.scrolledOut = false;
+            window.TouchCarousel.onSwipe();
+        } else {
+            var index = this.iScroll.currPageX;
+            window.TouchCarousel.open(this.href, index);
+        }
+    };
 
     // Create a styled page indicator for a given carousel.
     function PageIndicator (carousel) {
         this.carousel = carousel;
 
         var el = this.el = util.createElement('ul', {
-            'class': 'PageIndicator'
+            'class': 'PageIndicator dark'
         });
 
-        var dots = carousel.iScroll.pagesX.map(function (page) {
-            return util.createElement('li');
+        carousel.iScroll.pagesX.forEach(function (page) {
+            el.appendChild(util.createElement('li'));
         });
-        dots[0].className = 'active';
 
-        dots.forEach(function (dot) {
-            el.appendChild(dot);
-        });
+        // Update now and whenever a scroll finishes.
+        this.update();
+        this.carousel.iScroll.options.onScrollEnd = this.update.bind(this);
     }
+
+    PageIndicator.prototype.update = function () {
+        // Reset the current active indicator.
+        var active = this.el.querySelector('li.active');
+        util.removeClass(active, 'active');
+
+        // Make the new one active for the current index.
+        var index = this.carousel.iScroll.currPageX + 1,
+            selector = 'li:nth-child(' + index + ')',
+            target = this.el.querySelector(selector);
+        util.addClass(target, 'active');
+    };
 
     function onload () {
         // The Makefile inlines compressed CSS styles as a string variable.
         // Add them to the document head as a style tag.
         util.addStyles(window.TouchCarousel.styles);
 
-        // add overlay
-        // bind scroll methods
-        // add page indicator?
-
-        var carousel = new Carousel(wrapper, options);
+        new Carousel(wrapper, options);
     }
-
     document.addEventListener('DOMContentLoaded', onload, false);
 })();
-window.TouchCarousel.styles = '.wrapper{position:relative;overflow:hidden}.scroller>ul{margin:0;padding:0;list-style:none}.scroller>ul>li{position:relative;display:block;float:left;-webkit-box-sizing:border-box;box-sizing:border-box;-webkit-user-select:none;user-select:none}.PageIndicator,.PageIndicator>li{display:block;float:left;list-style:none;padding:0;margin:0}.PageIndicator{width:110px;padding:12px 0 0 30px;margin-top:-30px}.PageIndicator>li{text-indent:-9999em;width:8px;height:8px;-webkit-border-radius:4px;border-radius:4px;background:#ddd;margin-right:4px}.PageIndicator>li.active{background:#888}.PageIndicator>li:last-child{margin:0}';
+window.TouchCarousel.styles = '.Carousel.wrapper{position:relative;overflow:hidden}.Carousel>.scroller>ul{margin:0;padding:0;list-style:none}.Carousel>.scroller>ul>li{position:relative;display:block;float:left;-webkit-box-sizing:border-box;box-sizing:border-box;-webkit-user-select:none;user-select:none}.PageIndicator{position:absolute;text-align:center;width:100%;height:30px;bottom:0;padding:0;margin:0}.PageIndicator>li{display:inline-block;width:8px;height:8px;-webkit-border-radius:4px;border-radius:4px;background:#ddd;margin:11px 4px 0 0}.PageIndicator>li.active{background:#888}.PageIndicator>li:last-child{margin:0}.PageIndicator.dark{background:#000;opacity:.6}.PageIndicator.dark>li{background:#555}.PageIndicator.dark>li.active{background:#fff}.Carousel .OverlayContainer{position:absolute;text-align:center;left:0;top:50%;height:40px;margin-top:-20px;z-index:100}.Carousel .Overlay{display:inline-block;padding:10px;background-color:rgba(0,0,0,0.7);color:#fff;font-weight:bold;border-radius:10px;-webkit-border-radius:10px}';

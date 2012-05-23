@@ -52,14 +52,41 @@ window.TouchCarousel.util = (function () {
         return el.className.match(re);
     };
     util.addClass = function (el, className) {
-        if (!util.hasClass(el, className)) {
+        if (el && !util.hasClass(el, className)) {
             el.className += ' ' + className;
         }
     };
     util.removeClass = function (el, className) {
-        var re = new RegExp('(\\s|^)' + className + '(\\s|$)');
-        el.className = el.className.replace(re, ' ');
+        if (el) {
+            var re = new RegExp('(\\s|^)' + className + '(\\s|$)');
+            el.className = el.className.replace(re, ' ');
+        }
     };
+
+    util.fadeOut = function (el) {
+        el.style.display = 'none';
+    };
+
+    // Polyfill Function.prototype.bind.
+    // Adapted from:
+    // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Function/bind
+    if (!Function.prototype.bind) {
+        Function.prototype.bind = function (context) {
+            var slice = Array.prototype.slice,
+                args = slice.call(arguments, 1),
+                self = this,
+                noop = function () {},
+                bound = function () {
+                    return self.apply(
+                        this instanceof noop ? this : (context || {}),
+                        args.concat(slice.call(arguments))
+                    );
+                };
+            noop.prototype = this.prototype;
+            bound.prototype = new noop();
+            return bound;
+        };
+    }
 
     return util;
 })();

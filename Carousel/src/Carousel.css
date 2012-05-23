@@ -1,15 +1,23 @@
-.wrapper {
+/*
+ * Carousel.css
+ *
+ * Define CSS styles for the carousel, page indicator, and overlay.
+ * Instead of adding this as a separate file, the Makefile minifies this CSS
+ * and inlines it in Carousel.js to be added directly to head as a <style> tag.
+ */
+
+.Carousel.wrapper {
     position: relative;
     overflow: hidden;
 }
 
-.scroller > ul {
+.Carousel > .scroller > ul {
     margin: 0;
     padding: 0;
     list-style: none;
 }
 
-.scroller > ul > li {
+.Carousel >.scroller > ul > li {
     position: relative;
     display: block;
     float: left;
@@ -19,29 +27,24 @@
     user-select: none;
 }
 
-
-.PageIndicator,
-.PageIndicator > li {
-    display: block;
-    float: left;
-    list-style: none;
+.PageIndicator {
+    position: absolute;
+    text-align: center;
+    width: 100%;
+    height: 30px;
+    bottom: 0;
     padding: 0;
     margin: 0;
 }
 
-.PageIndicator {
-    width: 110px;
-    padding: 12px 0 0 30px;
-    margin-top: -30px;
-}
-
 .PageIndicator > li {
+    display: inline-block;
     width: 8px;
     height: 8px;
     -webkit-border-radius: 4px;
     border-radius: 4px;
     background: #ddd;
-    margin-right: 4px;
+    margin: 11px 4px 0 0;
 }
 
 .PageIndicator > li.active {
@@ -50,4 +53,36 @@
 
 .PageIndicator > li:last-child {
     margin: 0;
+}
+
+/* Optionally style the PageIndicator using a dark translucent overlay. */
+.PageIndicator.dark {
+    background: #000;
+    opacity: 0.6;
+}
+.PageIndicator.dark > li {
+    background: #555;
+}
+.PageIndicator.dark > li.active {
+    background: #fff;
+}
+
+.Carousel .OverlayContainer {
+    position: absolute;
+    text-align: center;
+    left: 0;
+    top: 50%;
+    height: 40px;
+    margin-top: -20px;
+    z-index: 100;
+}
+
+.Carousel .Overlay {
+    display: inline-block;
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    font-weight: bold;
+    border-radius: 10px;
+    -webkit-border-radius: 10px;
 }
