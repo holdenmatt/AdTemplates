@@ -35,6 +35,8 @@
     bottom: 0;
     padding: 0;
     margin: 0;
+    background: #000;
+    opacity: 0.6;
 }
 
 .PageIndicator > li {
@@ -43,28 +45,16 @@
     height: 8px;
     -webkit-border-radius: 4px;
     border-radius: 4px;
-    background: #ddd;
+    background: #555;
     margin: 11px 4px 0 0;
 }
 
 .PageIndicator > li.active {
-    background: #888;
+    background: #fff;
 }
 
 .PageIndicator > li:last-child {
     margin: 0;
-}
-
-/* Optionally style the PageIndicator using a dark translucent overlay. */
-.PageIndicator.dark {
-    background: #000;
-    opacity: 0.6;
-}
-.PageIndicator.dark > li {
-    background: #555;
-}
-.PageIndicator.dark > li.active {
-    background: #fff;
 }
 
 .Carousel .OverlayContainer {

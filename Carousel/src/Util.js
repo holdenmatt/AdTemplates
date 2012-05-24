@@ -29,11 +29,10 @@ window.TouchCarousel.util = (function () {
 
     // Add CSS text to the document head as a style tag.
     // http://stackoverflow.com/questions/524696/how-to-create-a-style-tag-with-javascript
-    util.addStyles = function (styles) {
+    util.addStyleTag = function (styles) {
 
-        var style = util.createElement('style', {
-            type: 'text/css'
-        });
+        var style = util.createElement('style', { type: 'text/css'}),
+            head = document.getElementsByTagName('head')[0];
 
         var rules = document.createTextNode(styles);
         if (style.styleSheet) {
@@ -41,8 +40,6 @@ window.TouchCarousel.util = (function () {
         } else {
             style.appendChild(rules);
         }
-
-        var head = document.getElementsByTagName('head')[0];
         head.appendChild(style);
     };
 
@@ -67,8 +64,7 @@ window.TouchCarousel.util = (function () {
         el.style.display = 'none';
     };
 
-    // Polyfill Function.prototype.bind.
-    // Adapted from:
+    // Polyfill Function.prototype.bind.  Adapted from:
     // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Function/bind
     if (!Function.prototype.bind) {
         Function.prototype.bind = function (context) {
