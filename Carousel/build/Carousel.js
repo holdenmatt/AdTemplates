@@ -1079,21 +1079,6 @@ else window.iScroll = iScroll;
  */
 window.Carousel = (function () {
 
-    //--- exports ---//
-
-    var exports = {};
-
-    // Open the carousel's target URL after a tap event on the item with
-    // given index.  Redirect by default, but you can override this if needed.
-    exports.open = function (url, itemIndex) {
-        window.open(url, '_blank');
-    };
-
-    // Called for every user 'swipe' event.
-    exports.onSwipe = function () {
-        // Do nothing.  Add in-ad tracking call here if needed.
-    };
-
 
     //--- Utility functions ---//
 
@@ -1288,6 +1273,19 @@ window.Carousel = (function () {
         this.el.appendChild(this.indicator.el);
     };
 
+    // Called when a user taps the item with given index.
+    // Open this carousel's href by default.
+    // Override this if different behavior is needed.
+    Carousel.prototype.onTap = function (itemIndex) {
+        window.open(this.href, '_blank');
+    };
+
+    // Called every time a user swipes between items.
+    // Override this to add in-ad tracking if needed.
+    Carousel.prototype.onSwipe = function () {
+        // Do nothing.
+    };
+
     // Fade out when scrolling starts.
     Carousel.prototype.onScrollStart = function (e) {
         if (this.overlay) {
@@ -1323,10 +1321,10 @@ window.Carousel = (function () {
             };
             e.target.addEventListener('click', preventClick, false);
             this.scrolledOut = false;
-            exports.onSwipe();
+            this.onSwipe();
         } else {
             var index = this.iScroll.currPageX;
-            exports.open(this.href, index);
+            this.onTap(index);
         }
     };
 
@@ -1387,6 +1385,6 @@ window.Carousel = (function () {
         carousel.initialize();
     }, false);
 
-    return exports;
+    return Carousel;
 })();
 window.Carousel.styles = '.Carousel.wrapper{position:relative;overflow:hidden}.Carousel>.scroller>ul{margin:0;padding:0;list-style:none}.Carousel>.scroller>ul>li{position:relative;display:block;float:left;-webkit-box-sizing:border-box;box-sizing:border-box;-webkit-user-select:none;user-select:none}.PageIndicator{position:absolute;text-align:center;width:100%;height:30px;bottom:0;padding:0;margin:0;background:#000;opacity:.6}.PageIndicator>li{display:inline-block;width:8px;height:8px;-webkit-border-radius:4px;border-radius:4px;background:#555;margin:11px 4px 0 0}.PageIndicator>li.active{background:#fff}.PageIndicator>li:last-child{margin:0}.Carousel .OverlayContainer{position:absolute;text-align:center;left:0;top:50%;height:40px;margin-top:-20px;z-index:100}.Carousel .Overlay{display:inline-block;padding:10px;background-color:rgba(0,0,0,0.7);color:#fff;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:bold;border-radius:10px;-webkit-border-radius:10px}';

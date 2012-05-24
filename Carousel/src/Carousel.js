@@ -3,21 +3,6 @@
  */
 window.Carousel = (function () {
 
-    //--- exports ---//
-
-    var exports = {};
-
-    // Open the carousel's target URL after a tap event on the item with
-    // given index.  Redirect by default, but you can override this if needed.
-    exports.open = function (url, itemIndex) {
-        window.open(url, '_blank');
-    };
-
-    // Called for every user 'swipe' event.
-    exports.onSwipe = function () {
-        // Do nothing.  Add in-ad tracking call here if needed.
-    };
-
 
     //--- Utility functions ---//
 
@@ -212,6 +197,19 @@ window.Carousel = (function () {
         this.el.appendChild(this.indicator.el);
     };
 
+    // Called when a user taps the item with given index.
+    // Open this carousel's href by default.
+    // Override this if different behavior is needed.
+    Carousel.prototype.onTap = function (itemIndex) {
+        window.open(this.href, '_blank');
+    };
+
+    // Called every time a user swipes between items.
+    // Override this to add in-ad tracking if needed.
+    Carousel.prototype.onSwipe = function () {
+        // Do nothing.
+    };
+
     // Fade out when scrolling starts.
     Carousel.prototype.onScrollStart = function (e) {
         if (this.overlay) {
@@ -247,10 +245,10 @@ window.Carousel = (function () {
             };
             e.target.addEventListener('click', preventClick, false);
             this.scrolledOut = false;
-            exports.onSwipe();
+            this.onSwipe();
         } else {
             var index = this.iScroll.currPageX;
-            exports.open(this.href, index);
+            this.onTap(index);
         }
     };
 
@@ -311,5 +309,5 @@ window.Carousel = (function () {
         carousel.initialize();
     }, false);
 
-    return exports;
+    return Carousel;
 })();
