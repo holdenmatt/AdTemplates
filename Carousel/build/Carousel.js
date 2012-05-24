@@ -1172,8 +1172,15 @@ window.Carousel = (function () {
         }
     }
 
+    // Fade an element out if CSS transitions are supported.
+    // Otherwise, just hide it.
     function fadeOut (el) {
-        el.style.display = 'none';
+        el.style.transition = el.style.webkitTransition = 'opacity .25s ease-out';
+        if (el.style.webkitTransition) {
+            el.style.opacity = 0;
+        } else {
+            el.style.visibility = 'hidden';
+        }
     }
 
     // Return an attribute value with given name, or throw an error.
