@@ -14,7 +14,7 @@ YUI_URL = http://yui.zenfs.com/releases/yuicompressor/$(YUI_FILE).zip
 YUI_FLAGS = --line-break 1000
 YUI = $(YUI_DIR)/$(YUI_FILE)/build/$(YUI_FILE).jar $(YUI_FLAGS)
 
-STYLE_STRING = window.TouchCarousel.styles = \'%s\';
+STYLE_STRING = window.Carousel.styles = \'%s\';
 
 all:
 	$(MAKE) build
@@ -25,7 +25,6 @@ build:
 
 	# Concat source.
 	cat $(SRC)/iscroll.js \
-		$(SRC)/Util.js \
 	 	$(SRC)/Carousel.js \
 	 	> $(BUILD)/Carousel.js
 

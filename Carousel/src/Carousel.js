@@ -1,44 +1,104 @@
 /*!
  * Carousel.js
- *
- * A touch-enabled image carousel.
  */
-window.TouchCarousel = window.TouchCarousel || {};
-(function () {
+window.Carousel = (function () {
 
-    var carousel;
+    //--- exports ---//
+
+    var exports = {};
 
     // Open the carousel's target URL after a tap event on the item with
     // given index.  Redirect by default, but you can override this if needed.
-    window.TouchCarousel.open = function (url, itemIndex) {
+    exports.open = function (url, itemIndex) {
         window.open(url, '_blank');
     };
 
     // Called for every user 'swipe' event.
-    window.TouchCarousel.onSwipe = function () {
+    exports.onSwipe = function () {
         // Do nothing.  Add in-ad tracking call here if needed.
     };
 
-    // Activate (only) the *last* div.Carousel element found.
-    // If this script is included immediately after a Carousel's markup,
-    // we'll only activate the preceding Carousel as expected.
-    var carousels = document.querySelectorAll('div.Carousel');
-    if (carousels.length > 0) {
-        carousel = new Carousel(carousels[carousels.length - 1]);
-    } else {
-        throw new Error('div.Carousel not found');
+
+    //--- Utility functions ---//
+
+
+    // Polyfill Function.prototype.bind.  Adapted from:
+    // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Function/bind
+    if (!Function.prototype.bind) {
+        Function.prototype.bind = function (context) {
+            var slice = Array.prototype.slice,
+                args = slice.call(arguments, 1),
+                self = this,
+                noop = function () {},
+                bound = function () {
+                    return self.apply(
+                        this instanceof noop ? this : (context || {}),
+                        args.concat(slice.call(arguments))
+                    );
+                };
+            noop.prototype = this.prototype;
+            bound.prototype = new noop();
+            return bound;
+        };
     }
 
-    // Add styles and activate/show the carousel after the document loads.
-    document.addEventListener('DOMContentLoaded', function () {
-        // The Makefile inlines compressed CSS styles as a string variable.
-        // Add them to the document head as a style tag.
-        util.addStyleTag(window.TouchCarousel.styles);
+    // Set style properties on an element.
+    function setStyles (el, styles) {
+        for (var prop in styles) {
+            if (styles.hasOwnProperty(prop)) {
+                el.style[prop] = styles[prop];
+            }
+        }
+    }
 
-        carousel.initialize();
-    }, false);
+    // Create a DOM element with given tagName, attributes, and style properties.
+    function createElement (tagName, attrs, styles) {
+        var el = document.createElement(tagName);
+        for (var attr in attrs) {
+            if (attrs.hasOwnProperty(attr)) {
+                el.setAttribute(attr, attrs[attr]);
+            }
+        }
+        setStyles(el, styles);
+        return el;
+    }
 
-    var util = window.TouchCarousel.util;
+    // Add CSS text to the document head as a style tag.
+    // http://stackoverflow.com/questions/524696/how-to-create-a-style-tag-with-javascript
+    function addStyleTag (styles) {
+
+        var style = createElement('style', { type: 'text/css'}),
+            head = document.getElementsByTagName('head')[0];
+
+        var rules = document.createTextNode(styles);
+        if (style.styleSheet) {
+            style.styleSheet.cssText = rules.nodeValue;
+        } else {
+            style.appendChild(rules);
+        }
+        head.appendChild(style);
+    }
+
+    // Add/remove CSS classes from an element.
+    function hasClass (el, className) {
+        var re = new RegExp('(\\s|^)' + className + '(\\s|$)');
+        return el.className.match(re);
+    }
+    function addClass (el, className) {
+        if (el && !hasClass(el, className)) {
+            el.className += ' ' + className;
+        }
+    }
+    function removeClass (el, className) {
+        if (el) {
+            var re = new RegExp('(\\s|^)' + className + '(\\s|$)');
+            el.className = el.className.replace(re, ' ');
+        }
+    }
+
+    function fadeOut (el) {
+        el.style.display = 'none';
+    }
 
     // Return an attribute value with given name, or throw an error.
     function getAttribute(el, name) {
@@ -49,6 +109,7 @@ window.TouchCarousel = window.TouchCarousel || {};
         return value;
     }
 
+    // Validate and return an integer attribute value.
     function getIntegerAttribute(el, name) {
         var value = getAttribute(el, name),
             intValue = parseInt(value, 10);
@@ -86,10 +147,23 @@ window.TouchCarousel = window.TouchCarousel || {};
     // Show the carousel and activate scrolling.
     Carousel.prototype.initialize = function () {
 
+        // Set dimensions on the wrapper and list items.
+        addClass(this.el, 'wrapper');
+        setStyles(this.el, {
+            width: this.width + 'px',
+            height: this.height + 'px'
+        });
+        for (var i = 0; i < this.items.length; i++) {
+            setStyles(this.items[i], {
+                width: this.width + 'px',
+                height: this.height + 'px'
+            });
+        }
+
         // Wrap the ul items in a scroller div for iScroll.
         // iScroll will snap to quadrants by dividing this scroller width
         // with the wrapper width.
-        this.scroller = util.createElement('div', {
+        this.scroller = createElement('div', {
             'class': 'scroller'
         }, {
             width: (this.width * this.items.length) + 'px',
@@ -98,20 +172,18 @@ window.TouchCarousel = window.TouchCarousel || {};
         this.el.appendChild(this.scroller);
         this.scroller.appendChild(this.ul);
 
-        // Set dimensions on the wrapper and list items.
-        util.addClass(this.el, 'wrapper');
-        util.setStyles(this.el, {
-            width: this.width + 'px',
-            height: this.height + 'px'
-        });
-        for (var i = 0; i < this.items.length; i++) {
-            util.setStyles(this.items[i], {
-                width: this.width + 'px',
-                height: this.height + 'px'
+        // Initialize the optional overlay.
+        this.overlay = this.el.querySelector('span.Overlay');
+        if (this.overlay) {
+            // Add the overlay to the scroller, so it doesn't block scrolling.
+            var container = createElement('div', {
+                'class': 'OverlayContainer'
+            }, {
+                width: this.width + 'px'
             });
+            this.scroller.appendChild(container);
+            container.appendChild(this.overlay);
         }
-
-        this.initializeOverlay();
 
         // Show the element now, so iScroll can use its dimensions.
         this.el.style.display = 'block';
@@ -133,24 +205,10 @@ window.TouchCarousel = window.TouchCarousel || {};
         this.el.appendChild(this.indicator.el);
     };
 
-    Carousel.prototype.initializeOverlay = function () {
-        this.overlay = this.el.querySelector('span.Overlay');
-        if (this.overlay) {
-            // Add the overlay to the scroller, so it doesn't block scrolling.
-            var container = util.createElement('div', {
-                'class': 'OverlayContainer'
-            }, {
-                width: this.width + 'px'
-            });
-            this.scroller.appendChild(container);
-            container.appendChild(this.overlay);
-        }
-    };
-
     // Fade out when scrolling starts.
     Carousel.prototype.onScrollStart = function (e) {
         if (this.overlay) {
-            util.fadeOut(this.overlay.parentNode);
+            fadeOut(this.overlay.parentNode);
         }
     };
 
@@ -182,10 +240,10 @@ window.TouchCarousel = window.TouchCarousel || {};
             };
             e.target.addEventListener('click', preventClick, false);
             this.scrolledOut = false;
-            window.TouchCarousel.onSwipe();
+            exports.onSwipe();
         } else {
             var index = this.iScroll.currPageX;
-            window.TouchCarousel.open(this.href, index);
+            exports.open(this.href, index);
         }
     };
 
@@ -197,11 +255,11 @@ window.TouchCarousel = window.TouchCarousel || {};
     function PageIndicator (carousel) {
         this.carousel = carousel;
 
-        var el = this.el = util.createElement('ul', {
+        var el = this.el = createElement('ul', {
             'class': 'PageIndicator'
         });
         carousel.iScroll.pagesX.forEach(function (page) {
-            el.appendChild(util.createElement('li'));
+            el.appendChild(createElement('li'));
         });
 
         // Update now and whenever a scroll finishes.
@@ -212,12 +270,39 @@ window.TouchCarousel = window.TouchCarousel || {};
     PageIndicator.prototype.update = function () {
         // Reset the current active indicator.
         var active = this.el.querySelector('li.active');
-        util.removeClass(active, 'active');
+        removeClass(active, 'active');
 
         // Make the new one active for the current index.
         var index = this.carousel.iScroll.currPageX + 1,
             selector = 'li:nth-child(' + index + ')',
             target = this.el.querySelector(selector);
-        util.addClass(target, 'active');
+        addClass(target, 'active');
     };
+
+
+    //--- Initialize ---//
+
+
+    var carousel;
+
+    // Activate (only) the *last* div.Carousel element found.
+    // If this script is included immediately after a Carousel's markup,
+    // we'll only activate the preceding Carousel as expected.
+    var carousels = document.querySelectorAll('div.Carousel');
+    if (carousels.length > 0) {
+        carousel = new Carousel(carousels[carousels.length - 1]);
+    } else {
+        throw new Error('div.Carousel not found');
+    }
+
+    // Add styles and activate/show the carousel after the document loads.
+    document.addEventListener('DOMContentLoaded', function () {
+        // The Makefile inlines compressed CSS styles as a string variable.
+        // Add them to the document head as a style tag.
+        addStyleTag(window.Carousel.styles);
+
+        carousel.initialize();
+    }, false);
+
+    return exports;
 })();
