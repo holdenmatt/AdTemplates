@@ -1,6 +1,7 @@
 # Carousel.js
 
-A simple touch-enabled HTML5 image carousel.
+A simple touch-enabled HTML5 image carousel, with page indicator
+and optional overlay text caption.
 
 [Demo](http://tapengage.github.com/AdTemplates/Carousel/demo/index.html)
 
@@ -47,20 +48,20 @@ data-width="300" data-height="250" data-href="http://www.google.com/images?q=ecl
 1. A wrapper `<div>` is required with class "Carousel", and data- attributes
 specifying the width/height (in pixels) and target href to open on click.
 
-We recommend also setting `style="display: none"` as above to avoid showing
+2. We recommend also setting `style="display: none"` as above to avoid showing
 content before the carousel is activated.
 
-2. Carousel items should be included as `<li>` list items in an `<ul>` tag.
+3. Carousel items should be included as `<li>` list items in an `<ul>` tag.
 
-3. Include the `Carousel.js` script immediately after the wrapper div.
+4. Include the `Carousel.js` script immediately after the wrapper div.
 
-4. An optional "Overlay" span can be included to show an overlay caption,
+5. An optional "Overlay" `<span>` can be included to show an overlay caption,
 which will fade away when a user first interacts with the carousel.
 
 
 ## Build
 
-The build/ versions of Carousel.js should work as-is.
+The build/ versions of Carousel.js should work out of the box.
 
-However, a Makefile is included if you'd like to modify and build your own
-(on any system that supports the Unix `make` utility).
+However, a Makefile is included if you'd like to modify/build your own.
+Just run `make` from the Carousel folder on any Unix-like system (e.g. Mac OS X).
