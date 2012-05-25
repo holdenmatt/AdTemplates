@@ -1262,6 +1262,7 @@ window.Carousel = (function () {
             momentum: false,
             hScrollbar: false,
             wheelAction: 'none',
+            snapThreshold: 5,
             onScrollStart: this.onScrollStart.bind(this),
             onScrollMove: this.onScrollMove.bind(this),
             onTouchEnd: this.onTouchEnd.bind(this)
@@ -1290,6 +1291,7 @@ window.Carousel = (function () {
     Carousel.prototype.onScrollStart = function (e) {
         if (this.overlay) {
             fadeOut(this.overlay.parentNode);
+            this.overlay = null;
         }
     };
 
@@ -1336,11 +1338,15 @@ window.Carousel = (function () {
     function PageIndicator (carousel) {
         this.carousel = carousel;
 
-        var el = this.el = createElement('ul', {
+        this.el = createElement('div', {
             'class': 'PageIndicator'
         });
+
+        var ul = createElement('ul');
+        this.el.appendChild(ul);
+
         carousel.iScroll.pagesX.forEach(function (page) {
-            el.appendChild(createElement('li'));
+            ul.appendChild(createElement('li'));
         });
 
         // Update now and whenever a scroll finishes.
@@ -1387,4 +1393,4 @@ window.Carousel = (function () {
 
     return Carousel;
 })();
-window.Carousel.styles = '.Carousel.wrapper{position:relative;overflow:hidden}.Carousel>.scroller>ul{margin:0;padding:0;list-style:none}.Carousel>.scroller>ul>li{position:relative;display:block;float:left;-webkit-box-sizing:border-box;box-sizing:border-box;-webkit-user-select:none;user-select:none}.PageIndicator{position:absolute;text-align:center;width:100%;height:30px;bottom:0;padding:0;margin:0;background:#000;opacity:.6}.PageIndicator>li{display:inline-block;width:8px;height:8px;-webkit-border-radius:4px;border-radius:4px;background:#555;margin:11px 4px 0 0}.PageIndicator>li.active{background:#fff}.PageIndicator>li:last-child{margin:0}.Carousel .OverlayContainer{position:absolute;text-align:center;left:0;top:50%;height:40px;margin-top:-20px;z-index:100}.Carousel .Overlay{display:inline-block;padding:10px;background-color:rgba(0,0,0,0.7);color:#fff;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:bold;border-radius:10px;-webkit-border-radius:10px}';
+window.Carousel.styles = '.Carousel.wrapper{position:relative;overflow:hidden}.Carousel>.scroller>ul{margin:0;padding:0;list-style:none}.Carousel>.scroller>ul>li{position:relative;display:block;float:left;-webkit-box-sizing:border-box;box-sizing:border-box;-webkit-user-select:none;user-select:none}.PageIndicator{position:absolute;width:100%;height:30px;bottom:0;background:#000;opacity:.6}.PageIndicator ul{position:absolute;text-align:center;width:100%;height:100%;margin:0;padding:0;padding-top:5px}.PageIndicator li{display:inline-block;width:8px;height:8px;-webkit-border-radius:4px;border-radius:4px;background:#555;margin-right:4px}.PageIndicator li.active{background:#fff}.PageIndicator li:last-child{margin:0}.Carousel .OverlayContainer{position:absolute;text-align:center;left:0;top:50%;height:40px;margin-top:-20px;z-index:100}.Carousel .Overlay{display:inline-block;padding:10px;background-color:rgba(0,0,0,0.7);color:#fff;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:bold;border-radius:10px;-webkit-border-radius:10px}';

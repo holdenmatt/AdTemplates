@@ -186,6 +186,7 @@ window.Carousel = (function () {
             momentum: false,
             hScrollbar: false,
             wheelAction: 'none',
+            snapThreshold: 5,
             onScrollStart: this.onScrollStart.bind(this),
             onScrollMove: this.onScrollMove.bind(this),
             onTouchEnd: this.onTouchEnd.bind(this)
@@ -214,6 +215,7 @@ window.Carousel = (function () {
     Carousel.prototype.onScrollStart = function (e) {
         if (this.overlay) {
             fadeOut(this.overlay.parentNode);
+            this.overlay = null;
         }
     };
 
@@ -260,11 +262,15 @@ window.Carousel = (function () {
     function PageIndicator (carousel) {
         this.carousel = carousel;
 
-        var el = this.el = createElement('ul', {
+        this.el = createElement('div', {
             'class': 'PageIndicator'
         });
+
+        var ul = createElement('ul');
+        this.el.appendChild(ul);
+
         carousel.iScroll.pagesX.forEach(function (page) {
-            el.appendChild(createElement('li'));
+            ul.appendChild(createElement('li'));
         });
 
         // Update now and whenever a scroll finishes.
