@@ -1278,7 +1278,7 @@ window.Carousel = (function () {
     // Open this carousel's href by default.
     // Override this if different behavior is needed.
     Carousel.prototype.onTap = function (itemIndex) {
-        window.open(this.href, '_blank');
+        window.open(this.href, '_self');
     };
 
     // Called every time a user swipes between items.
