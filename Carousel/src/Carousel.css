@@ -21,6 +21,7 @@
     position: relative;
     display: block;
     float: left;
+    clear: none;
     margin: 0;
     padding: 0;
     -webkit-box-sizing: border-box;
