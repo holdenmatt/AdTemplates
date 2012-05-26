@@ -1296,7 +1296,7 @@ window.Carousel = (function () {
         var ua = navigator.userAgent,
             target = '_blank';
         alert(ua);
-        if (ua.match(/Android/i) || ua.match(/Kindle/i)) {
+        if (ua.match(/Android/i) || ua.match(/Kindle/i) || ua.match(/Silk-Accelerated/i)) {
             target = '_self';
         }
 
