@@ -1289,7 +1289,17 @@ window.Carousel = (function () {
     // Open this carousel's href by default.
     // Override this if different behavior is needed.
     Carousel.prototype.onTap = function (itemIndex) {
-        window.open(this.href);
+
+        // Tap should open a new window (with target _blank).
+        // This works well in iOS, but gets blocked on some Android versions
+        // and Kindle Fire, so use target '_self' instead.
+        var ua = navigator.userAgent,
+            target = '_blank';
+        if (ua.match(/Android/i) || ua.match(/Kindle/i)) {
+            target = '_self';
+        }
+
+        window.open(this.href, target);
     };
 
     // Called every time a user swipes between items.
