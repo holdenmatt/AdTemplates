@@ -130,9 +130,20 @@ window.Carousel = (function () {
         if (!this.ul) {
             throw new Error('Carousel div must contain an <ul> tag');
         }
-        this.items = this.ul.querySelectorAll('li');
+        // Keep only non-empty list items; remove others.
+        this.items = [];
+        var li = this.ul.querySelectorAll('li'),
+            item;
+        for (var i = 0; i < li.length; i++) {
+            item = li[i];
+            if (item.innerHTML) {
+                this.items.push(item);
+            } else {
+                item.parentNode.removeChild(item);
+            }
+        }
         if (this.items.length === 0) {
-            throw new Error('Carousel ul must contain <li> items');
+            throw new Error('Carousel ul must contain non-empty <li> items.');
         }
     }
 
