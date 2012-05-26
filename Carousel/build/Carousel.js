@@ -1295,6 +1295,7 @@ window.Carousel = (function () {
         // and Kindle Fire, so use target '_self' instead.
         var ua = navigator.userAgent,
             target = '_blank';
+        alert(ua);
         if (ua.match(/Android/i) || ua.match(/Kindle/i)) {
             target = '_self';
         }
