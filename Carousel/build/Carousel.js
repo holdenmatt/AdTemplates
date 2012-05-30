@@ -1094,7 +1094,11 @@ window.Carousel = (function () {
                 href: url,
                 target: '_blank'
             });
-            a.click();
+            document.body.appendChild(a);
+
+            var e = document.createEvent('MouseEvents');
+            e.initMouseEvent('click', true, true, document.defaultView, 1, 0, 0, 0, 0, false, false, false, false, 0, null);
+            a.dispatchEvent(e);
         } else {
             window.open(url, '_blank');
         }
