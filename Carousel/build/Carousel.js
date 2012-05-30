@@ -1087,14 +1087,17 @@ window.Carousel = (function () {
     function openURL (url) {
 
         // target _blank works fine on iOS, but gets blocked on some Android
-        // versions (including Kindle Fire), so use target _self instead.
-        var ua = navigator.userAgent,
-            target = '_blank';
+        // versions (including Kindle Fire), so create and click an anchor instead.
+        var ua = navigator.userAgent;
         if (ua.match(/Android/i) || ua.match(/Kindle/i) || ua.match(/Silk-Accelerated/i)) {
-            target = '_self';
+            var a = createElement('a', {
+                href: url,
+                target: '_blank'
+            });
+            a.click();
+        } else {
+            window.open(url, '_blank');
         }
-
-        window.open(url, target);
     }
 
     // Polyfill Function.prototype.bind.  Adapted from:
