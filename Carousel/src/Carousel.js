@@ -125,25 +125,39 @@ window.Carousel = (function () {
         this.width = getIntegerAttribute(el, 'data-width');
         this.height = getIntegerAttribute(el, 'data-height');
 
-        // The carousel div must contain a ul with li items.
         this.ul = el.querySelector('ul');
         if (!this.ul) {
             throw new Error('Carousel div must contain an <ul> tag');
         }
-        // Keep only non-empty list items; remove others.
+
+        // Populate the list of carousel items.
         this.items = [];
         var li = this.ul.querySelectorAll('li'),
-            item;
+            item, src;
         for (var i = 0; i < li.length; i++) {
             item = li[i];
-            if (item.innerHTML) {
+
+            // Image tags can be created from a data- attribute
+            // (e.g. if an ad trafficker can only insert URLs, not markup).
+            src = item.getAttribute('data-image-src');
+            if (src) {
+                item.appendChild(createElement('img', {
+                    src: src
+                }));
+            }
+
+            // Only accept li tags that include a single img tag; remove others.
+            if (item.querySelectorAll('img').length === 1) {
                 this.items.push(item);
             } else {
                 item.parentNode.removeChild(item);
             }
         }
         if (this.items.length === 0) {
-            throw new Error('Carousel ul must contain non-empty <li> items.');
+            throw new Error(
+                'Carousel ul must contain <li> items with either ' +
+                'a child img tag or data-image-src attribute.'
+            );
         }
     }
 

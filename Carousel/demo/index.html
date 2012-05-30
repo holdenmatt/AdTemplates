@@ -12,16 +12,20 @@
     data-width="300" data-height="250" data-href="http://www.google.com/images?q=eclipse">
         <span class="Overlay">&#x2190 Swipe to Explore &#x2192</span>
         <ul>
+            <!-- Include image tags in markup... -->
             <li><img src="images/1.jpg"/></li>
             <li><img src="images/2.jpg"/></li>
             <li><img src="images/3.jpg"/></li>
-            <li><img src="images/4.jpg"/></li>
-            <li><img src="images/5.jpg"/></li>
 
-            <!-- Ignore empty list items. -->
+            <!-- ...or use data-image-src attributes to insert them. -->
+            <li data-image-src="images/4.jpg"></li>
+            <li data-image-src="images/5.jpg"></li>
+
+            <!-- Ignore empty list items, or items with multiple images. -->
             <li></li>
             <li></li>
-            <li></li>
+            <li><img src="foo.jpg"/><img src="bar.jpg"/></li>
+            <li data-image-src="first.jpg"><img src="second.jpg"/></li>
         </ul>
     </div>
     <script src="../build/Carousel.js"></script>
