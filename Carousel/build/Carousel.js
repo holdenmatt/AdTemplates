@@ -1083,6 +1083,20 @@ window.Carousel = (function () {
     //--- Utility functions ---//
 
 
+    // We use this function to open a URL on click in a new tab.
+    function openURL (url) {
+
+        // target _blank works fine on iOS, but gets blocked on some Android
+        // versions (including Kindle Fire), so use target _self instead.
+        var ua = navigator.userAgent,
+            target = '_blank';
+        if (ua.match(/Android/i) || ua.match(/Kindle/i) || ua.match(/Silk-Accelerated/i)) {
+            target = '_self';
+        }
+
+        window.open(url, target);
+    }
+
     // Polyfill Function.prototype.bind.  Adapted from:
     // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Function/bind
     if (!Function.prototype.bind) {
@@ -1303,17 +1317,7 @@ window.Carousel = (function () {
     // Open this carousel's href by default.
     // Override this if different behavior is needed.
     Carousel.prototype.onTap = function (itemIndex) {
-
-        // Tap should open a new window (with target _blank).
-        // This works well in iOS, but gets blocked on some Android versions
-        // and Kindle Fire, so use target '_self' instead.
-        var ua = navigator.userAgent,
-            target = '_blank';
-        if (ua.match(/Android/i) || ua.match(/Kindle/i) || ua.match(/Silk-Accelerated/i)) {
-            target = '_self';
-        }
-
-        window.open(this.href, target);
+        openURL(this.href);
     };
 
     // Called every time a user swipes between items.
