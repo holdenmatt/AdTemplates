@@ -7,25 +7,23 @@ window.Carousel = (function () {
     //--- Utility functions ---//
 
 
-    // We use this function to open a URL on click in a new tab.
+    // We use this function to open a URL in a new tab on click.
+    // window.open(url, '_blank') works fine in iOS but is blocked as a popup
+    // on Kindle Fire and some other Android versions.
+    // Creating an anchor and dispatching a click event works across iOS
+    // and Android devices.
     function openURL (url) {
 
-        // target _blank works fine on iOS, but gets blocked on some Android
-        // versions (including Kindle Fire), so create and click an anchor instead.
-        var ua = navigator.userAgent;
-        if (ua.match(/Android/i) || ua.match(/Kindle/i) || ua.match(/Silk-Accelerated/i)) {
-            var a = createElement('a', {
-                href: url,
-                target: '_blank'
-            });
-            document.body.appendChild(a);
+        var anchor = createElement('a', {
+            href: url,
+            target: '_blank'
+        });
+        document.body.appendChild(anchor);
 
-            var e = document.createEvent('MouseEvents');
-            e.initMouseEvent('click', true, true, document.defaultView, 1, 0, 0, 0, 0, false, false, false, false, 0, null);
-            a.dispatchEvent(e);
-        } else {
-            window.open(url, '_blank');
-        }
+        var e = document.createEvent('MouseEvents');
+        e.initMouseEvent('click', true, true, document.defaultView,
+            1, 0, 0, 0, 0, false, false, false, false, 0, null);
+        anchor.dispatchEvent(e);
     }
 
     // Polyfill Function.prototype.bind.  Adapted from:
